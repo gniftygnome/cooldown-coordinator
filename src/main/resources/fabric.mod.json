@@ -1,0 +1,30 @@
+{
+  "schemaVersion": 1,
+  "id": "cooldown-coordinator",
+  "version": "${version}",
+  "name": "Cooldown Coordinator",
+  "description": "Helper library to coordinate setting cooldown timers",
+  "authors": [
+    "GniftyGnome"
+  ],
+  "contact": {
+    "website": "http://www.gnomecraft.net/",
+    "repo": "https://github.com/gniftygnome/cooldown-coordinator"
+  },
+  "license": "Apache-2.0",
+  "icon": "assets/cooldown-coordinator/icon.png",
+  "environment": "*",
+  "entrypoints": {
+    "main": [
+      "net.gnomecraft.cooldowncoordinator.CooldownCoordinator"
+    ]
+  },
+  "mixins": [
+    "cooldown-coordinator.mixins.json"
+  ],
+  "depends": {
+    "fabricloader": ">=0.13.3",
+    "fabric": "*",
+    "minecraft": "1.18.*"
+  }
+}
