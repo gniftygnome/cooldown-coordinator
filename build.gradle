@@ -59,6 +59,9 @@ jar {
 publishing {
     publications {
         mavenJava(MavenPublication) {
+            groupId    = "${project.maven_group}"
+            artifactId = "${project.archives_base_name}"
+            version    = "${project.mod_version}"
             from components.java
         }
     }
@@ -69,5 +72,13 @@ publishing {
         // Notice: This block does NOT have the same function as the block in the top level.
         // The repositories here will be used for publishing your artifact, not for
         // retrieving dependencies.
+
+        maven { url = 'https://maven.pkg.github.com/gniftygnome/cooldown-coordinator'
+            credentials {
+                username = project.findProperty("gpr.user") ?: System.getenv("USERNAME")
+                password = project.findProperty("gpr.key") ?: System.getenv("TOKEN")
+            }
+        }
     }
+
 }
