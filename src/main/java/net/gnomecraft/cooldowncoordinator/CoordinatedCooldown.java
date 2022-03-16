@@ -12,7 +12,9 @@ package net.gnomecraft.cooldowncoordinator;
  */
 public interface CoordinatedCooldown {
     /**
-     * This method will be called when an implementor of the interface should set a cooldown timer.
+     * This method will be called when an implementor of the interface should set a cooldown timer.  It is
+     * effectively a private method for use by the CooldownCoordinator, and implementations may vary.  For these
+     * reasons, there is no default implementation.
      *
      * <p>To mirror vanilla behavior, implementors should keep track of world.getTime() at each server tick()
      * in order to know if they have already been called for the currently processing tick.  In the event the
@@ -27,7 +29,7 @@ public interface CoordinatedCooldown {
      *     private long lastTickTime;
      *     ...
      *
-     *     public static void serverTick(...) {
+     *     public static void serverTick(World world, BlockPos pos, BlockState state, HopperBlockEntity blockEntity) {
      *         blockEntity.lastTickTime = world.getTime();
      *         ...
      *     }

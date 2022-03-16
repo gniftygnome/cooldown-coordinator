@@ -5,9 +5,7 @@ import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant;
 import net.fabricmc.fabric.api.transfer.v1.storage.Storage;
 import net.fabricmc.fabric.api.transfer.v1.storage.StorageView;
 import net.fabricmc.fabric.api.transfer.v1.transaction.Transaction;
-import net.gnomecraft.cooldowncoordinator.mixin.AccessHopperBlockEntity;
 import net.minecraft.block.entity.BlockEntity;
-import net.minecraft.block.entity.HopperBlockEntity;
 import net.minecraft.inventory.Inventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.world.World;
@@ -75,20 +73,6 @@ public class CooldownCoordinator implements ModInitializer {
         if (entity instanceof CoordinatedCooldown) {
             CooldownCoordinator.LOGGER.debug("Notifying BE: " + entity);
             ((CoordinatedCooldown) entity).notifyCooldown();
-            return true;
-        } else if (entity instanceof HopperBlockEntity) {
-            // Special case for HBE because it doesn't implement CoordinatedCooldown.
-            // This mirrors what happens just after one hopper transfers to another.
-            // See the example in the javadocs for CoordinatedCooldown.notifyCooldown()
-            CooldownCoordinator.LOGGER.debug("Hacking notification of HBE: " + entity);
-            if (!((AccessHopperBlockEntity) entity).callIsDisabled()) {
-                if (((AccessHopperBlockEntity) entity).getLastTickTime() >= world.getTime()) {
-                    ((AccessHopperBlockEntity) entity).setTransferCooldown(7);
-                } else {
-                    ((AccessHopperBlockEntity) entity).setTransferCooldown(8);
-                }
-                ((Inventory) entity).markDirty();
-            }
             return true;
         } else {
             CooldownCoordinator.LOGGER.debug("Cannot notify BE: " + entity);

@@ -22,6 +22,11 @@
   "mixins": [
     "cooldown-coordinator.mixins.json"
   ],
+  "custom": {
+    "loom:injected_interfaces": {
+      "net/minecraft/block/entity/HopperBlockEntity": ["net/gnomecraft/cooldowncoordinator/CoordinatedCooldown"]
+    }
+  },
   "depends": {
     "fabricloader": ">=0.13.3",
     "fabric": "*",
