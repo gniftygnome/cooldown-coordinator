@@ -9,7 +9,6 @@ import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.inventory.Inventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.world.World;
-import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -47,7 +46,7 @@ public class CooldownCoordinator implements ModInitializer {
      *             boolean targetEmpty = CooldownCoordinator.isItemStorageEmpty(targetStorage);
      *
      *             if (StorageUtil.move(sourceStorage, targetStorage, variant -> true, 1, null) > 0) {
-     *                 if (targetEmpty) {
+     *                 if (targetEmpty && targetEntity != null) {
      *                     CooldownCoordinator.notify(targetEntity);
      *                 }
      *                 this.setCooldown(8);
@@ -64,7 +63,10 @@ public class CooldownCoordinator implements ModInitializer {
      * @param entity The block entity we may notify of coordinated cooldown
      * @return A boolean indicating whether the target was notified
      */
-    public static boolean notify(@NotNull BlockEntity entity) {
+    public static boolean notify(@Nullable BlockEntity entity) {
+        if (entity == null) {
+            return false;
+        }
         World world = entity.getWorld();
         if (world == null || world.isClient()) {
             return false;

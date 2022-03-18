@@ -2,6 +2,7 @@ package net.gnomecraft.cooldowncoordinator.mixin;
 
 import net.gnomecraft.cooldowncoordinator.*;
 import net.minecraft.block.BlockState;
+import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.entity.BlockEntityType;
 import net.minecraft.block.entity.HopperBlockEntity;
 import net.minecraft.block.entity.LootableContainerBlockEntity;
@@ -68,9 +69,8 @@ public abstract class MixinHopperBlockEntity extends LootableContainerBlockEntit
     )
     private static void injectCoordinator(Inventory from, Inventory to, ItemStack stack, int slot, Direction side, CallbackInfoReturnable<ItemStack> cir, ItemStack itemStack, boolean bl, boolean bl2) {
         // bl2 indicates whether the destination inventory was empty before the hopper moved an item into it
-        if (bl2 && to instanceof CoordinatedCooldown) {
-            CooldownCoordinator.LOGGER.debug("Notifying BE: " + to);
-            ((CoordinatedCooldown) to).notifyCooldown();
+        if (bl2 && to instanceof BlockEntity) {
+            CooldownCoordinator.notify((BlockEntity) to);
         }
     }
 }
