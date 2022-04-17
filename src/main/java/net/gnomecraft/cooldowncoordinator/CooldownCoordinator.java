@@ -3,8 +3,7 @@ package net.gnomecraft.cooldowncoordinator;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant;
 import net.fabricmc.fabric.api.transfer.v1.storage.Storage;
-import net.fabricmc.fabric.api.transfer.v1.storage.StorageView;
-import net.fabricmc.fabric.api.transfer.v1.transaction.Transaction;
+import net.fabricmc.fabric.api.transfer.v1.storage.StorageUtil;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.inventory.Inventory;
 import net.minecraft.item.ItemStack;
@@ -12,8 +11,6 @@ import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.Iterator;
 
 public class CooldownCoordinator implements ModInitializer {
     public static final String modId = "cooldown-coordinator";
@@ -83,26 +80,30 @@ public class CooldownCoordinator implements ModInitializer {
     }
 
     /**
-     * Helper method to check whether ItemVariant Storage is empty.
+     * Helper method to check whether a Storage is empty.
      *
-     * @param storage ItemVariant Storage to evaluate for emptiness
-     * @return True if storage contains only blank ItemVariants and false if not
+     * @param storage Storage to evaluate for emptiness
+     * @return True if storage contains only blank Variants and false if not
      */
-    public static boolean isItemStorageEmpty(@Nullable Storage<ItemVariant> storage) {
+    public static boolean isStorageEmpty(@Nullable Storage<?> storage) {
         if (storage == null) {
             return true;
         }
 
-        try (Transaction outerTransaction = Transaction.openOuter()) {
-            Iterator<StorageView<ItemVariant>> iterator = storage.iterator(outerTransaction);
-            while (iterator.hasNext()) {
-                StorageView<ItemVariant> view = iterator.next();
-                if (!view.isResourceBlank()) {
-                    return false;                }
-            }
-        }
+        return StorageUtil.findStoredResource(storage, null) == null;
+    }
 
-        return true;
+    /**
+     * Helper method to check whether ItemVariant Storage is empty.
+     *
+     * DEPRECATED in favor of {@code boolean isStorageEmpty(@Nullable Storage<?> storage) }
+     *
+     * @param storage ItemVariant Storage to evaluate for emptiness
+     * @return True if storage contains only blank ItemVariants and false if not
+     */
+    @Deprecated(forRemoval = true)
+    public static boolean isItemStorageEmpty(@Nullable Storage<ItemVariant> storage) {
+        return CooldownCoordinator.isStorageEmpty(storage);
     }
 
     /**

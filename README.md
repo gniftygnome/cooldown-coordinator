@@ -14,15 +14,16 @@ hoppers, ducts, etc. to behave predictably.
 The mod provides an interface to implement and a method to call when a cooldown
 should be triggered.  The method may safely be called with any BlockEntity as
 its argument.  When the target BE implements the interface, it will be notified
-of the cooldown and can take whatever action it deems appropriate.  As a special
-case, the portion of vanilla hopper transfer code which handles cooldowns is
-emulated when the method is called with an instance of HopperBlockEntity that
-does not also implement our interface.
+of the cooldown and can take whatever action it deems appropriate.  When this
+mod is installed, descendants of HopperBlockEntity which do not override HBE's
+insert() and innermost transfer() methods automatically implement the interface
+and will coordinate with other implementing BEs.
 
-## How to Use this Library
-For now, the best documentation is in the library's javadocs.  There are some
-important details (f.e. how to know when a cooldown should be triggered) which
-I intend to document properly once the mod is a bit more mature.
+## How to Use this Library 
+There are some important details (f.e. how to know when a cooldown should be
+triggered) which implementors need to get right in order for coordination to
+work properly.  See the library's javadocs, or take a look at the
+[wiki](https://github.com/gniftygnome/cooldown-coordinator/wiki).
 
 ## Future Goals
 I would like this mod or something similar to be part of the Fabric API.  At

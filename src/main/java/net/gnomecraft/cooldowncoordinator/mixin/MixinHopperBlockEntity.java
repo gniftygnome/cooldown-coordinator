@@ -1,15 +1,19 @@
 package net.gnomecraft.cooldowncoordinator.mixin;
 
+import net.fabricmc.fabric.api.transfer.v1.item.InventoryStorage;
+import net.fabricmc.fabric.api.transfer.v1.item.ItemStorage;
+import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant;
+import net.fabricmc.fabric.api.transfer.v1.storage.Storage;
+import net.fabricmc.fabric.api.transfer.v1.storage.StorageUtil;
 import net.gnomecraft.cooldowncoordinator.*;
 import net.minecraft.block.BlockState;
-import net.minecraft.block.entity.BlockEntity;
-import net.minecraft.block.entity.BlockEntityType;
-import net.minecraft.block.entity.HopperBlockEntity;
-import net.minecraft.block.entity.LootableContainerBlockEntity;
+import net.minecraft.block.HopperBlock;
+import net.minecraft.block.entity.*;
 import net.minecraft.inventory.Inventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
+import net.minecraft.world.World;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
@@ -58,6 +62,7 @@ public abstract class MixinHopperBlockEntity extends LootableContainerBlockEntit
 
     }
 
+    // This injection patches the traditional Inventory-based HopperBlockEntity code to call notify().
     @Inject(
 			at = @At(
                     value = "INVOKE",
@@ -72,5 +77,59 @@ public abstract class MixinHopperBlockEntity extends LootableContainerBlockEntit
         if (bl2 && to instanceof BlockEntity) {
             CooldownCoordinator.notify((BlockEntity) to);
         }
+    }
+
+    // This injection bypasses the Fabric transfer API's implementation of HopperBLockEntity's insert() method.
+    // Ultimately this is basically code that should go in the transfer API when/if this becomes part of the API.
+    @Inject(
+            at = @At(value = "HEAD"),
+            method = "insert(Lnet/minecraft/world/World;Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/block/BlockState;Lnet/minecraft/inventory/Inventory;)Z",
+            locals = LocalCapture.NO_CAPTURE,
+            cancellable = true
+    )
+    private static void bypassFAPIStorageInsert(World world, BlockPos pos, BlockState state, Inventory inventory, CallbackInfoReturnable<Boolean> cir) {
+        /*
+         * Copy of HopperBlockEntity.getOutputInventory() which is captured by HopperBlockEntityMixin.hookInsert()
+         */
+        Direction facing = state.get(HopperBlock.FACING);
+        Inventory targetInventory = HopperBlockEntity.getInventoryAt(world, pos.offset(facing));
+
+        /*
+         * Reimplementation of the transfer API's HopperBlockEntityMixin.hookInsert()
+         */
+        // Let vanilla handle the transfer if it found an inventory.
+        if (targetInventory != null) return;
+
+        // Otherwise inject our transfer logic.
+        Direction direction = state.get(HopperBlock.FACING);
+        BlockPos targetPos = pos.offset(direction);
+        Storage<ItemVariant> target = ItemStorage.SIDED.find(world, targetPos, direction.getOpposite());
+        boolean targetEmpty = StorageUtil.findStoredResource(target, null) == null;
+
+        if (target != null) {
+            long moved = StorageUtil.move(
+                    InventoryStorage.of(inventory, direction),
+                    target,
+                    iv -> true,
+                    1,
+                    null
+            );
+
+            if (moved == 1) {
+                if (targetEmpty) {
+                    CooldownCoordinator.notify(world.getBlockEntity(targetPos));
+                }
+
+                cir.setReturnValue(true);
+            }
+        }
+
+        /*
+         * Bypass the rest of HopperBlockEntity.insert() regardless.
+         * This is necessary (for performance) to prevent the transfer API from retrying the move
+         * we just tried.  There may be some mod compatibility consequences of this ... I am not
+         * certain exactly why the transfer API elects not to return false here itself.
+         */
+        cir.setReturnValue(false);
     }
 }
