@@ -25,6 +25,9 @@
   "custom": {
     "loom:injected_interfaces": {
       "net/minecraft/block/entity/HopperBlockEntity": ["net/gnomecraft/cooldowncoordinator/CoordinatedCooldown"]
+    },
+    "modmenu": {
+      "badges": [ "library" ]
     }
   },
   "depends": {
