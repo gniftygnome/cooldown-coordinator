@@ -72,7 +72,7 @@ public abstract class MixinHopperBlockEntity extends LootableContainerBlockEntit
             method = "transfer(Lnet/minecraft/inventory/Inventory;Lnet/minecraft/inventory/Inventory;Lnet/minecraft/item/ItemStack;ILnet/minecraft/util/math/Direction;)Lnet/minecraft/item/ItemStack;",
             locals = LocalCapture.CAPTURE_FAILSOFT
     )
-    private static void injectCoordinator(Inventory from, Inventory to, ItemStack stack, int slot, Direction side, CallbackInfoReturnable<ItemStack> cir, ItemStack itemStack, boolean bl, boolean bl2) {
+    private static void CooldownCoordinator$injectCoordinator(Inventory from, Inventory to, ItemStack stack, int slot, Direction side, CallbackInfoReturnable<ItemStack> cir, ItemStack itemStack, boolean bl, boolean bl2) {
         // bl2 indicates whether the destination inventory was empty before the hopper moved an item into it
         if (bl2 && to instanceof BlockEntity) {
             CooldownCoordinator.notify((BlockEntity) to);
@@ -87,7 +87,7 @@ public abstract class MixinHopperBlockEntity extends LootableContainerBlockEntit
             locals = LocalCapture.NO_CAPTURE,
             cancellable = true
     )
-    private static void bypassFAPIStorageInsert(World world, BlockPos pos, BlockState state, Inventory inventory, CallbackInfoReturnable<Boolean> cir) {
+    private static void CooldownCoordinator$bypassFAPIStorageInsert(World world, BlockPos pos, BlockState state, Inventory inventory, CallbackInfoReturnable<Boolean> cir) {
         /*
          * Copy of HopperBlockEntity.getOutputInventory() which is captured by HopperBlockEntityMixin.hookInsert()
          */
