@@ -90,7 +90,7 @@ public class CooldownCoordinator implements ModInitializer {
             return true;
         }
 
-        return StorageUtil.findStoredResource(storage, null) == null;
+        return StorageUtil.findStoredResource(storage) == null;
     }
 
     /**
