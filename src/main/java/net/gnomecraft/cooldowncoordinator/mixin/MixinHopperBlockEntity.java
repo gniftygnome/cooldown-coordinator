@@ -104,7 +104,7 @@ public abstract class MixinHopperBlockEntity extends LootableContainerBlockEntit
         Direction direction = state.get(HopperBlock.FACING);
         BlockPos targetPos = pos.offset(direction);
         Storage<ItemVariant> target = ItemStorage.SIDED.find(world, targetPos, direction.getOpposite());
-        boolean targetEmpty = StorageUtil.findStoredResource(target, null) == null;
+        boolean targetEmpty = StorageUtil.findStoredResource(target) == null;
 
         if (target != null) {
             long moved = StorageUtil.move(
