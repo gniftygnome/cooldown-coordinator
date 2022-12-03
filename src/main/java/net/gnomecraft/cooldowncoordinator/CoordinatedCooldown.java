@@ -1,8 +1,5 @@
 package net.gnomecraft.cooldowncoordinator;
 
-import net.minecraft.block.entity.BlockEntity;
-import net.minecraft.block.entity.HopperBlockEntity;
-
 /**
  * Interface to enable automatic coordination of item movement cooldown.
  *
@@ -52,31 +49,4 @@ public interface CoordinatedCooldown {
      * }</pre>
      */
     void notifyCooldown();
-
-    /**
-     * This method implements a Lithium API so we can be notified by Lithium's reimplementation of the
-     * HopperBlockEntity code, which defeats mixins to a large portion of the vanilla Hopper code.
-     *
-     * <a href="https://github.com/CaffeineMC/lithium-fabric/issues/426">Lithium issue 426</a>
-     *
-     * @return boolean Whether Lithium should notify a CC implementor when a Hopper pushes to its inventory
-     */
-    default boolean canReceiveTransferCooldown() {
-        // Let Lithium handle cooldown notification between hoppers in whatever manner it expects will work...
-        return !(this instanceof HopperBlockEntity);
-    }
-
-    /**
-     * This method implements a Lithium API so we can be notified by Lithium's reimplementation of the
-     * HopperBlockEntity code, which defeats mixins to a large portion of the vanilla Hopper code.
-     *
-     * <a href="https://github.com/CaffeineMC/lithium-fabric/issues/426">Lithium issue 426</a>
-     *
-     * @param currentTime Game tick time at which Lithium is processing the notification
-     */
-    default void setTransferCooldown(long currentTime) {
-        if (this instanceof BlockEntity blockEntity) {
-            CooldownCoordinator.notify(blockEntity);
-        }
-    }
 }

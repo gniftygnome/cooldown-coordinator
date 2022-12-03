@@ -23,6 +23,9 @@
     "cooldown-coordinator.mixins.json"
   ],
   "custom": {
+    "lithium:options": {
+      "mixin.block.hopper": false
+    },
     "loom:injected_interfaces": {
       "net/minecraft/class_2614": ["net/gnomecraft/cooldowncoordinator/CoordinatedCooldown"]
     },
@@ -34,8 +37,5 @@
     "fabricloader": ">=0.13.3",
     "fabric": "*",
     "minecraft": ">=1.19 <1.21"
-  },
-  "breaks": {
-    "lithium": "<=0.10.4"
   }
 }
