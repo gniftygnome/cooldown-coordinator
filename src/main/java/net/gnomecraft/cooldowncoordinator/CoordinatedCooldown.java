@@ -1,5 +1,8 @@
 package net.gnomecraft.cooldowncoordinator;
 
+import net.minecraft.block.entity.BlockEntity;
+import net.minecraft.block.entity.HopperBlockEntity;
+
 /**
  * Interface to enable automatic coordination of item movement cooldown.
  *
@@ -10,6 +13,7 @@ package net.gnomecraft.cooldowncoordinator;
  * The Fabric transfer API's hopper mixin will prevent notification by vanilla hoppers otherwise.
  * (F.e. you can {@code implement Inventory } to be compatible with both the transfer API and cooldown notification.)
  */
+@SuppressWarnings("unused")
 public interface CoordinatedCooldown {
     /**
      * This method will be called when an implementor of the interface should set a cooldown timer.  It is
@@ -47,5 +51,32 @@ public interface CoordinatedCooldown {
      * }
      * }</pre>
      */
-    public void notifyCooldown();
+    void notifyCooldown();
+
+    /**
+     * This method implements a Lithium API so we can be notified by Lithium's reimplementation of the
+     * HopperBlockEntity code, which defeats mixins to a large portion of the vanilla Hopper code.
+     *
+     * <a href="https://github.com/CaffeineMC/lithium-fabric/issues/426">Lithium issue 426</a>
+     *
+     * @return boolean Whether Lithium should notify a CC implementor when a Hopper pushes to its inventory
+     */
+    default boolean canReceiveTransferCooldown() {
+        // Let Lithium handle cooldown notification between hoppers in whatever manner it expects will work...
+        return !(this instanceof HopperBlockEntity);
+    }
+
+    /**
+     * This method implements a Lithium API so we can be notified by Lithium's reimplementation of the
+     * HopperBlockEntity code, which defeats mixins to a large portion of the vanilla Hopper code.
+     *
+     * <a href="https://github.com/CaffeineMC/lithium-fabric/issues/426">Lithium issue 426</a>
+     *
+     * @param currentTime Game tick time at which Lithium is processing the notification
+     */
+    default void setTransferCooldown(long currentTime) {
+        if (this instanceof BlockEntity) {
+            CooldownCoordinator.notify((BlockEntity) this);
+        }
+    }
 }
