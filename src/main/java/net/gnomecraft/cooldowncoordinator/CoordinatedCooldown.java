@@ -75,8 +75,8 @@ public interface CoordinatedCooldown {
      * @param currentTime Game tick time at which Lithium is processing the notification
      */
     default void setTransferCooldown(long currentTime) {
-        if (this instanceof BlockEntity) {
-            CooldownCoordinator.notify((BlockEntity) this);
+        if (this instanceof BlockEntity blockEntity) {
+            CooldownCoordinator.notify(blockEntity);
         }
     }
 }

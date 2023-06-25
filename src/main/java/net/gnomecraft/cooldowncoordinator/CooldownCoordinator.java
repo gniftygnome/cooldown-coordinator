@@ -70,9 +70,9 @@ public class CooldownCoordinator implements ModInitializer {
             return false;
         }
 
-        if (entity instanceof CoordinatedCooldown) {
+        if (entity instanceof CoordinatedCooldown coordinatedEntity) {
             CooldownCoordinator.LOGGER.debug("Notifying BE: " + entity);
-            ((CoordinatedCooldown) entity).notifyCooldown();
+            coordinatedEntity.notifyCooldown();
             return true;
         } else {
             CooldownCoordinator.LOGGER.debug("Cannot notify BE: " + entity);
