@@ -12,7 +12,7 @@ import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-@SuppressWarnings({"UnstableApiUsage", "unused", "UnusedReturnValue"})
+@SuppressWarnings({"unused", "UnusedReturnValue"})
 public class CooldownCoordinator implements ModInitializer {
     public static final String modId = "cooldown-coordinator";
     public static final Logger LOGGER = LoggerFactory.getLogger(modId);

@@ -1,5 +1,6 @@
 package net.gnomecraft.cooldowncoordinator.mixin;
 
+import com.llamalad7.mixinextras.sugar.Local;
 import net.fabricmc.fabric.api.transfer.v1.item.InventoryStorage;
 import net.fabricmc.fabric.api.transfer.v1.item.ItemStorage;
 import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant;
@@ -7,7 +8,6 @@ import net.fabricmc.fabric.api.transfer.v1.storage.Storage;
 import net.fabricmc.fabric.api.transfer.v1.storage.StorageUtil;
 import net.gnomecraft.cooldowncoordinator.*;
 import net.minecraft.block.BlockState;
-import net.minecraft.block.HopperBlock;
 import net.minecraft.block.entity.*;
 import net.minecraft.inventory.Inventory;
 import net.minecraft.item.ItemStack;
@@ -23,10 +23,14 @@ import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 
 @Mixin(HopperBlockEntity.class)
 public abstract class MixinHopperBlockEntity extends LootableContainerBlockEntity implements CoordinatedCooldown {
-
-    @Shadow private long lastTickTime;
-    @Shadow protected abstract boolean isDisabled();
-    @Shadow protected abstract void setTransferCooldown(int transferCooldown);
+    @Shadow
+    private Direction facing;
+    @Shadow
+    private long lastTickTime;
+    @Shadow
+    protected abstract boolean isDisabled();
+    @Shadow
+    protected abstract void setTransferCooldown(int transferCooldown);
 
     protected MixinHopperBlockEntity(BlockEntityType<?> blockEntityType, BlockPos blockPos, BlockState blockState) {
         super(blockEntityType, blockPos, blockState);
@@ -72,7 +76,7 @@ public abstract class MixinHopperBlockEntity extends LootableContainerBlockEntit
             method = "transfer(Lnet/minecraft/inventory/Inventory;Lnet/minecraft/inventory/Inventory;Lnet/minecraft/item/ItemStack;ILnet/minecraft/util/math/Direction;)Lnet/minecraft/item/ItemStack;",
             locals = LocalCapture.CAPTURE_FAILSOFT
     )
-    private static void CooldownCoordinator$injectCoordinator(Inventory from, Inventory to, ItemStack stack, int slot, Direction side, CallbackInfoReturnable<ItemStack> cir, ItemStack itemStack, boolean bl, boolean bl2) {
+    private static void CooldownCoordinator$injectCoordinator(Inventory from, Inventory to, ItemStack stack, int slot, Direction side, CallbackInfoReturnable<ItemStack> cir, @Local(ordinal = 1) boolean bl2) {
         // bl2 indicates whether the destination inventory was empty before the hopper moved an item into it
         if (bl2 && to instanceof BlockEntity toEntity) {
             CooldownCoordinator.notify(toEntity);
@@ -83,17 +87,16 @@ public abstract class MixinHopperBlockEntity extends LootableContainerBlockEntit
     // Ultimately this is basically code that should go in the transfer API when/if this becomes part of the API.
     @Inject(
             at = @At(value = "HEAD"),
-            method = "insert(Lnet/minecraft/world/World;Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/block/BlockState;Lnet/minecraft/inventory/Inventory;)Z",
+            method = "insert",
             locals = LocalCapture.NO_CAPTURE,
             cancellable = true
     )
-    @SuppressWarnings("UnstableApiUsage")
-    private static void CooldownCoordinator$bypassFAPIStorageInsert(World world, BlockPos pos, BlockState state, Inventory inventory, CallbackInfoReturnable<Boolean> cir) {
+    private static void CooldownCoordinator$bypassFAPIStorageInsert(World world, BlockPos pos, HopperBlockEntity blockEntity, CallbackInfoReturnable<Boolean> cir) {
         /*
          * Copy of HopperBlockEntity.getOutputInventory() which is captured by HopperBlockEntityMixin.hookInsert()
          */
-        Direction facing = state.get(HopperBlock.FACING);
-        Inventory targetInventory = HopperBlockEntity.getInventoryAt(world, pos.offset(facing));
+        Inventory targetInventory = HopperBlockEntity.getInventoryAt(
+                world, pos.offset(((MixinHopperBlockEntity) (Object) blockEntity).facing));
 
         /*
          * Reimplementation of the transfer API's HopperBlockEntityMixin.hookInsert()
@@ -102,14 +105,14 @@ public abstract class MixinHopperBlockEntity extends LootableContainerBlockEntit
         if (targetInventory != null) return;
 
         // Otherwise inject our transfer logic.
-        Direction direction = state.get(HopperBlock.FACING);
+        Direction direction = ((MixinHopperBlockEntity) (Object) blockEntity).facing.getOpposite();
         BlockPos targetPos = pos.offset(direction);
         Storage<ItemVariant> target = ItemStorage.SIDED.find(world, targetPos, direction.getOpposite());
         boolean targetEmpty = StorageUtil.findStoredResource(target) == null;
 
         if (target != null) {
             long moved = StorageUtil.move(
-                    InventoryStorage.of(inventory, direction),
+                    InventoryStorage.of(blockEntity, direction),
                     target,
                     iv -> true,
                     1,
