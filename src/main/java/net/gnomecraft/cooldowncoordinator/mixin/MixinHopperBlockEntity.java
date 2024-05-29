@@ -122,6 +122,7 @@ public abstract class MixinHopperBlockEntity extends LootableContainerBlockEntit
                 }
 
                 cir.setReturnValue(true);
+                return;
             }
         }
 
