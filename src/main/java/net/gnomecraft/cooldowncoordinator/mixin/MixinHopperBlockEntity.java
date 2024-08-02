@@ -105,7 +105,7 @@ public abstract class MixinHopperBlockEntity extends LootableContainerBlockEntit
         if (targetInventory != null) return;
 
         // Otherwise inject our transfer logic.
-        Direction direction = ((MixinHopperBlockEntity) (Object) blockEntity).facing.getOpposite();
+        Direction direction = ((MixinHopperBlockEntity) (Object) blockEntity).facing;
         BlockPos targetPos = pos.offset(direction);
         Storage<ItemVariant> target = ItemStorage.SIDED.find(world, targetPos, direction.getOpposite());
         boolean targetEmpty = StorageUtil.findStoredResource(target) == null;
