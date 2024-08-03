@@ -1,11 +1,6 @@
 package net.gnomecraft.cooldowncoordinator.mixin;
 
 import com.llamalad7.mixinextras.sugar.Local;
-import net.fabricmc.fabric.api.transfer.v1.item.InventoryStorage;
-import net.fabricmc.fabric.api.transfer.v1.item.ItemStorage;
-import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant;
-import net.fabricmc.fabric.api.transfer.v1.storage.Storage;
-import net.fabricmc.fabric.api.transfer.v1.storage.StorageUtil;
 import net.gnomecraft.cooldowncoordinator.*;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.*;
@@ -13,7 +8,6 @@ import net.minecraft.inventory.Inventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
-import net.minecraft.world.World;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
@@ -23,8 +17,6 @@ import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 
 @Mixin(HopperBlockEntity.class)
 public abstract class MixinHopperBlockEntity extends LootableContainerBlockEntity implements CoordinatedCooldown {
-    @Shadow
-    private Direction facing;
     @Shadow
     private long lastTickTime;
     @Shadow
@@ -74,67 +66,12 @@ public abstract class MixinHopperBlockEntity extends LootableContainerBlockEntit
                     shift = At.Shift.BEFORE
             ),
             method = "transfer(Lnet/minecraft/inventory/Inventory;Lnet/minecraft/inventory/Inventory;Lnet/minecraft/item/ItemStack;ILnet/minecraft/util/math/Direction;)Lnet/minecraft/item/ItemStack;",
-            locals = LocalCapture.CAPTURE_FAILSOFT
+            locals = LocalCapture.CAPTURE_FAILHARD
     )
     private static void CooldownCoordinator$injectCoordinator(Inventory from, Inventory to, ItemStack stack, int slot, Direction side, CallbackInfoReturnable<ItemStack> cir, @Local(ordinal = 1) boolean bl2) {
         // bl2 indicates whether the destination inventory was empty before the hopper moved an item into it
         if (bl2 && to instanceof BlockEntity toEntity) {
             CooldownCoordinator.notify(toEntity);
         }
-    }
-
-    // This injection bypasses the Fabric transfer API's implementation of HopperBLockEntity's insert() method.
-    // Ultimately this is basically code that should go in the transfer API when/if this becomes part of the API.
-    @Inject(
-            at = @At(value = "HEAD"),
-            method = "insert",
-            locals = LocalCapture.NO_CAPTURE,
-            cancellable = true
-    )
-    private static void CooldownCoordinator$bypassFAPIStorageInsert(World world, BlockPos pos, HopperBlockEntity blockEntity, CallbackInfoReturnable<Boolean> cir) {
-        /*
-         * Copy of HopperBlockEntity.getOutputInventory() which is captured by HopperBlockEntityMixin.hookInsert()
-         */
-        Inventory targetInventory = HopperBlockEntity.getInventoryAt(
-                world, pos.offset(((MixinHopperBlockEntity) (Object) blockEntity).facing));
-
-        /*
-         * Reimplementation of the transfer API's HopperBlockEntityMixin.hookInsert()
-         */
-        // Let vanilla handle the transfer if it found an inventory.
-        if (targetInventory != null) return;
-
-        // Otherwise inject our transfer logic.
-        Direction direction = ((MixinHopperBlockEntity) (Object) blockEntity).facing;
-        BlockPos targetPos = pos.offset(direction);
-        Storage<ItemVariant> target = ItemStorage.SIDED.find(world, targetPos, direction.getOpposite());
-        boolean targetEmpty = StorageUtil.findStoredResource(target) == null;
-
-        if (target != null) {
-            long moved = StorageUtil.move(
-                    InventoryStorage.of(blockEntity, direction),
-                    target,
-                    iv -> true,
-                    1,
-                    null
-            );
-
-            if (moved == 1) {
-                if (targetEmpty) {
-                    CooldownCoordinator.notify(world.getBlockEntity(targetPos));
-                }
-
-                cir.setReturnValue(true);
-                return;
-            }
-        }
-
-        /*
-         * Bypass the rest of HopperBlockEntity.insert() regardless.
-         * This is necessary (for performance) to prevent the transfer API from retrying the move
-         * we just tried.  There may be some mod compatibility consequences of this ... I am not
-         * certain exactly why the transfer API elects not to return false here itself.
-         */
-        cir.setReturnValue(false);
     }
 }
