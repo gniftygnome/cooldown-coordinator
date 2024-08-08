@@ -18,7 +18,7 @@ repositories {
     // for more information about repositories.
 
     // For Mixin Squared
-    maven { url = "https://maven.bawnorton.com/releases" }
+    maven { url = "https://maven.gnomecraft.net/releases" }
 }
 
 dependencies {
@@ -77,10 +77,10 @@ publishing {
         // The repositories here will be used for publishing your artifact, not for
         // retrieving dependencies.
 
-        maven { url = 'https://maven.pkg.github.com/gniftygnome/cooldown-coordinator'
+        maven { url = 'https://maven.gnomecraft.net/artifactory/libs-release-local'
             credentials {
-                username = project.findProperty("gpr.user") ?: System.getenv("USERNAME")
-                password = project.findProperty("gpr.key") ?: System.getenv("TOKEN")
+                username = project.findProperty("gpr.user") ?: System.getenv("GNOMECRAFT_USERNAME")
+                password = project.findProperty("gpr.key") ?: System.getenv("GNOMECRAFT_TOKEN")
             }
         }
     }
