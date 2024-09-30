@@ -31,7 +31,7 @@ dependencies {
     modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
 
     // Mixin Squared to allow us to mixin directly to FTAPI's HBE mixin.
-    include(implementation(annotationProcessor("com.bawnorton.mixinsquared:mixinsquared-fabric:${project.mixin_squared_version}")))
+    include(implementation(annotationProcessor("com.github.bawnorton:mixinsquared-fabric:${project.mixin_squared_version}")))
 }
 
 processResources {
