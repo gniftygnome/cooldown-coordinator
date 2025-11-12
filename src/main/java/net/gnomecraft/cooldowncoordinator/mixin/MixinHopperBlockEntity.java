@@ -13,7 +13,6 @@ import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
-import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 
 @Mixin(HopperBlockEntity.class)
 public abstract class MixinHopperBlockEntity extends LootableContainerBlockEntity implements CoordinatedCooldown {
@@ -35,13 +34,14 @@ public abstract class MixinHopperBlockEntity extends LootableContainerBlockEntit
      * to CoordinatedCooldown:
      *
      * <pre>{@code
-     *     if (entity instanceof CoordinatedCooldown) {
-     *         ((CoordinatedCooldown) entity).notifyCooldown();
+     *     if (entity instanceof CoordinatedCooldown cooldownEntity) {
+     *         cooldownEntity.notifyCooldown();
      *     }
      * }</pre>
      *
      * However, don't do that.  Just call {@code CooldownCoordinator.notify(targetEntity); } and let it notify.
      */
+    @SuppressWarnings("AddedMixinMembersNamePattern")
     @Override
     public void notifyCooldown() {
         // Insert implementation of the CoordinatedCooldown interface into HBE.
@@ -59,14 +59,14 @@ public abstract class MixinHopperBlockEntity extends LootableContainerBlockEntit
     }
 
     // This injection patches the traditional Inventory-based HopperBlockEntity code to call notify().
+    @SuppressWarnings({"DiscouragedShift", "LocalMayBeArgsOnly"})
     @Inject(
 			at = @At(
                     value = "INVOKE",
                     target = "Lnet/minecraft/inventory/Inventory;markDirty()V",
                     shift = At.Shift.BEFORE
             ),
-            method = "transfer(Lnet/minecraft/inventory/Inventory;Lnet/minecraft/inventory/Inventory;Lnet/minecraft/item/ItemStack;ILnet/minecraft/util/math/Direction;)Lnet/minecraft/item/ItemStack;",
-            locals = LocalCapture.CAPTURE_FAILHARD
+            method = "transfer(Lnet/minecraft/inventory/Inventory;Lnet/minecraft/inventory/Inventory;Lnet/minecraft/item/ItemStack;ILnet/minecraft/util/math/Direction;)Lnet/minecraft/item/ItemStack;"
     )
     private static void CooldownCoordinator$injectCoordinator(Inventory from, Inventory to, ItemStack stack, int slot, Direction side, CallbackInfoReturnable<ItemStack> cir, @Local(ordinal = 1) boolean bl2) {
         // bl2 indicates whether the destination inventory was empty before the hopper moved an item into it
