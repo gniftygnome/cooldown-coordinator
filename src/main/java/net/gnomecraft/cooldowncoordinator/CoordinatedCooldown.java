@@ -1,5 +1,7 @@
 package net.gnomecraft.cooldowncoordinator;
 
+import org.jspecify.annotations.NullMarked;
+
 /**
  * Interface to enable automatic coordination of item movement cooldown.
  *
@@ -10,6 +12,7 @@ package net.gnomecraft.cooldowncoordinator;
  * The Fabric transfer API's hopper mixin will prevent notification by vanilla hoppers otherwise.
  * (F.e. you can {@code implement Inventory } to be compatible with both the transfer API and cooldown notification.)
  */
+@NullMarked
 @SuppressWarnings("unused")
 public interface CoordinatedCooldown {
     /**

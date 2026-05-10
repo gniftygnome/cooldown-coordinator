@@ -70,7 +70,7 @@ public abstract class MixinHopperBlockEntity extends RandomizableContainerBlockE
                     shift = At.Shift.BEFORE
             )
     )
-    @SuppressWarnings("DiscouragedShift")
+    @SuppressWarnings({"DiscouragedShift", "LocalMayBeArgsOnly"})
     private static void CooldownCoordinator$injectCoordinator(Container from, Container container, ItemStack stack, int slot, Direction side, CallbackInfoReturnable<ItemStack> cir, @Local(ordinal = 1) boolean wasEmpty) {
         // wasEmpty indicates whether the destination inventory was empty before the hopper moved an item into it
         if (wasEmpty && container instanceof BlockEntity toEntity) {
