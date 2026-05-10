@@ -4,14 +4,16 @@ import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant;
 import net.fabricmc.fabric.api.transfer.v1.storage.Storage;
 import net.fabricmc.fabric.api.transfer.v1.storage.StorageUtil;
-import net.minecraft.block.entity.BlockEntity;
-import net.minecraft.inventory.Inventory;
-import net.minecraft.item.ItemStack;
-import net.minecraft.world.World;
-import org.jetbrains.annotations.Nullable;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.Container;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Level;
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+@NullMarked
 @SuppressWarnings({"unused", "UnusedReturnValue"})
 public class CooldownCoordinator implements ModInitializer {
     public static final String modId = "cooldown-coordinator";
@@ -34,11 +36,11 @@ public class CooldownCoordinator implements ModInitializer {
      *
      * <p>For example, implementing code might look something like this:
      * <pre>{@code
-     *     private boolean push(World world, BlockPos pos, BlockState state, MyEntity entity) {
+     *     private boolean push(Level level, BlockPos pos, BlockState state, MyEntity entity) {
      *         Direction facing = state.get(MyBlock.FACING);
-     *         BlockEntity targetEntity = world.getBlockEntity(pos.offset(facing));
-     *         ItemStorage sourceStorage = ItemStorage.SIDED.find(world, pos, state, entity, facing);
-     *         ItemStorage targetStorage = ItemStorage.SIDED.find(world, pos.offset(facing), facing.getOpposite());
+     *         BlockEntity targetEntity = level.getBlockEntity(pos.offset(facing));
+     *         ItemStorage sourceStorage = ItemStorage.SIDED.find(level, pos, state, entity, facing);
+     *         ItemStorage targetStorage = ItemStorage.SIDED.find(level, pos.offset(facing), facing.getOpposite());
      *
      *         if (sourceStorage != null && targetStorage != null) {
      *             boolean targetEmpty = CooldownCoordinator.isItemStorageEmpty(targetStorage);
@@ -48,7 +50,7 @@ public class CooldownCoordinator implements ModInitializer {
      *                     CooldownCoordinator.notify(targetEntity);
      *                 }
      *                 this.setCooldown(8);
-     *                 this.markDirty();
+     *                 this.setChanged();
      *
      *                 return true;
      *             }
@@ -65,17 +67,17 @@ public class CooldownCoordinator implements ModInitializer {
         if (entity == null) {
             return false;
         }
-        World world = entity.getWorld();
-        if (world == null || world.isClient()) {
+        Level level = entity.getLevel();
+        if (level == null || level.isClientSide()) {
             return false;
         }
 
         if (entity instanceof CoordinatedCooldown coordinatedEntity) {
-            CooldownCoordinator.LOGGER.debug("Notifying BE: " + entity);
+            CooldownCoordinator.LOGGER.debug("Notifying BE: {}", entity);
             coordinatedEntity.notifyCooldown();
             return true;
         } else {
-            CooldownCoordinator.LOGGER.debug("Cannot notify BE: " + entity);
+            CooldownCoordinator.LOGGER.debug("Cannot notify BE: {}", entity);
             return false;
         }
     }
@@ -96,7 +98,7 @@ public class CooldownCoordinator implements ModInitializer {
 
     /**
      * Helper method to check whether ItemVariant Storage is empty.
-     *
+     * <p/>
      * DEPRECATED in favor of {@code boolean isStorageEmpty(@Nullable Storage<?> storage) }
      *
      * @param storage ItemVariant Storage to evaluate for emptiness
@@ -113,13 +115,16 @@ public class CooldownCoordinator implements ModInitializer {
      * @param inventory Inventory to evaluate for emptiness
      * @return True if inventory contains only empty ItemStacks and false if not
      */
-    public static boolean isInventoryEmpty(@Nullable Inventory inventory) {
+    public static boolean isInventoryEmpty(@Nullable Container inventory) {
         if (inventory == null) {
             return true;
         }
 
-        for (int slot = 0; slot < inventory.size(); ++slot) {
-            ItemStack stack = inventory.getStack(slot);
+        for (int slot = 0; slot < inventory.getContainerSize(); ++slot) {
+            ItemStack stack = inventory.getItem(slot);
+
+            // Take extra care here in case other mods violate the nullability contract.
+            //noinspection ConstantConditions
             if (stack != null && !stack.isEmpty()) {
                 return false;
             }

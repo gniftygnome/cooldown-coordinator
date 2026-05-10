@@ -9,9 +9,9 @@ import net.fabricmc.fabric.api.transfer.v1.storage.Storage;
 import net.fabricmc.fabric.api.transfer.v1.storage.StorageUtil;
 import net.fabricmc.fabric.api.transfer.v1.transaction.TransactionContext;
 import net.gnomecraft.cooldowncoordinator.CooldownCoordinator;
-import net.minecraft.block.entity.HopperBlockEntity;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
+import net.minecraft.world.level.block.entity.HopperBlockEntity;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.Level;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
@@ -39,7 +39,7 @@ public final class MixinTransferApiHBE {
             method = "@MixinSquared:Handler",
             at = @At(
                     value = "INVOKE",
-                    target = "Lnet/minecraft/util/math/BlockPos;offset(Lnet/minecraft/util/math/Direction;)Lnet/minecraft/util/math/BlockPos;"
+                    target = "Lnet/minecraft/core/BlockPos;relative(Lnet/minecraft/core/Direction;)Lnet/minecraft/core/BlockPos;"
             )
     )
     @SuppressWarnings("unused")
@@ -61,7 +61,7 @@ public final class MixinTransferApiHBE {
             )
     )
     @SuppressWarnings("unused")
-    private static long CooldownCoordinator$extendFAPIStorageInsert(Storage<ItemVariant> from, Storage<ItemVariant> to, Predicate<ItemVariant> filter, long maxAmount, TransactionContext transaction, Operation<Long> operation, World world) {
+    private static long CooldownCoordinator$extendFAPIStorageInsert(Storage<ItemVariant> from, Storage<ItemVariant> to, Predicate<ItemVariant> filter, long maxAmount, TransactionContext transaction, Operation<Long> operation, Level world) {
         // Was the target empty before we moved something to it?
         boolean targetEmpty = StorageUtil.findStoredResource(to) == null;
 

@@ -26,23 +26,23 @@ public interface CoordinatedCooldown {
      *
      * <p>For example, here is what the implementation for vanilla hoppers would look like:
      * <pre>{@code
-     * public class HopperBlockEntity extends LootableContainerBlockEntity implements Hopper, CoordinatedCooldown {
-     *     private long lastTickTime;
+     * public class HopperBlockEntity extends RandomizableContainerBlockEntity implements Hopper, CoordinatedCooldown {
+     *     private long tickedGameTime;
      *     ...
      *
-     *     public static void serverTick(World world, BlockPos pos, BlockState state, HopperBlockEntity blockEntity) {
-     *         blockEntity.lastTickTime = world.getTime();
+     *     public static void serverTick(Level level, BlockPos pos, BlockState state, HopperBlockEntity blockEntity) {
+     *         blockEntity.tickedGameTime = level.getTime();
      *         ...
      *     }
      *
      *     public void notifyCooldown() {
      *         if (!this.isDisabled()) {
-     *             if (this.lastTickTime >= world.getTime()) {
+     *             if (this.tickedGameTime >= world.getTime()) {
      *                 this.setTransferCooldown(7);
      *             } else {
      *                 this.setTransferCooldown(8);
      *             }
-     *             this.markDirty();
+     *             this.setChanged();
      *         }
      *     }
      * }

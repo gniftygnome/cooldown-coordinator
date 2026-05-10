@@ -16,7 +16,7 @@ should be triggered.  The method may safely be called with any BlockEntity as
 its argument.  When the target BE implements the interface, it will be notified
 of the cooldown and can take whatever action it deems appropriate.  When this
 mod is installed, descendants of HopperBlockEntity which do not override HBE's
-insert() and innermost transfer() methods automatically implement the interface
+ejectItems() and tryMoveInItem() methods automatically implement the interface
 and will coordinate with other implementing BEs.
 
 ## How to Use this Library 
